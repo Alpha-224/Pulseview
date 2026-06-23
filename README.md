@@ -9,47 +9,55 @@ PulseView is an Android app that estimates **heart rate** and **respiratory rate
 ## How it works
 
 PulseView uses a technique called remote photoplethysmography (rPPG): the human face has a dense capillary bed beneath the skin, and each heartbeat causes subtle, periodic colour changes in facial skin — far too small to see with the naked eye, but detectable by a deep learning model trained on video.
-Front camera (25s recording)
 
-│
+```mermaid
+flowchart LR
 
-▼
+    A["25s facial video"]
 
-Face detection (Haar Cascade) → crop → resize → diff-normalize
+    B["Preprocessing<br/>Face detection → Crop → Resize → Diff-normalize"]
 
-│
+    C["EfficientPhys<br/>(ONNX)"]
 
-├──────────────────────┐
+    D["POS algorithm<br/>(Wang et al., 2017)"]
 
-▼                      ▼
+    E["BVP waveform"]
 
-EfficientPhys (ONNX)      POS algorithm
+    F["Frequency estimate"]
 
-on-device inference       (classical, independent
+    G["Cross-check & correction"]
 
-│                  cross-check)
+    H["HR"]
 
-▼                      │
+    I["RR"]
 
-BVP waveform                  │
+    J["HRV (experimental)"]
 
-│                      │
+    K["Signal reliability"]
 
-▼                      ▼
+    L["Firestore"]
 
-FFT-based HR  ◄── corrected by ──┘
+    A --> B
 
-│
+    B --> C
+    B --> D
 
-▼
+    C --> E
+    E --> F
 
-HR · RR · HRV (experimental) · signal reliability
+    D --> G
+    F --> G
 
-│
+    G --> H
+    G --> I
+    G --> J
+    G --> K
 
-▼
-
-Firestore (history, trends over time)
+    H --> L
+    I --> L
+    J --> L
+    K --> L
+```
 
 ### Why two algorithms?
 
@@ -115,16 +123,16 @@ cd Pulseview
 
 You'll need to provide your own:
 
-Firebase project — create one at the Firebase console, enable Authentication (Google provider) and Firestore, then download google-services.json and place it in app/
-Firestore security rules — restrict access appropriately for your use case; see docs/firestore.rules for the exact rules used in production
-Signing key (for release builds only — debug builds work without this):
+1. **Firebase project** — create one at the [Firebase console](https://console.firebase.google.com), enable Authentication (Google provider) and Firestore, then download `google-services.json` and place it in `app/`
+2. **Firestore security rules** — restrict access appropriately for your use case; see [`docs/firestore.rules`](docs/firestore.rules) for the exact rules used in production
+3. **Signing key** (for release builds only — debug builds work without this):
 
 ```bash
-keytool -genkey -v -keystore release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias pulseview
+   keytool -genkey -v -keystore release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias pulseview
 ```
 
-Configure keystore.properties (not tracked in this repo) with your keystore path and credentials, referenced by app/build.gradle.kts's signingConfigs.
-SHA-1 fingerprint registered in your Firebase project, for both debug and release keystores (`./gradlew signingReport` to get the fingerprint)
+   Configure `keystore.properties` (not tracked in this repo) with your keystore path and credentials, referenced by `app/build.gradle.kts`'s `signingConfigs`.
+4. **SHA-1 fingerprint** registered in your Firebase project, for both debug and release keystores (`./gradlew signingReport` to get the fingerprint)
 
 Then:
 
@@ -132,6 +140,8 @@ Then:
 ./gradlew assembleDebug      # debug build, no signing needed
 ./gradlew assembleRelease    # release build, needs keystore.properties
 ```
+
+---
 
 ## License
 
