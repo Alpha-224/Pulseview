@@ -1,0 +1,19 @@
+*.iml
+.gradle/
+/local.properties
+.idea/
+.DS_Store
+/build
+build/
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+*.keystore
+google-services.json
+keystore.properties
+*.jks
+
+# Personal test fixtures (face video/frames) - not for public repo
+app/src/androidTest/assets/test_video.mp4
+app/src/androidTest/assets/frames/
